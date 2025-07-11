@@ -83,7 +83,7 @@ const BookDetails = () => {
     axios.post(`${baseUrl}/cart`, data)
          .then(() => {
            alert('Book added successfully');
-           reset();
+          //  reset();
          })
          .catch((err) => {
            alert(`Error adding book: ${err.message}`);
