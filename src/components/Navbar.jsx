@@ -28,8 +28,8 @@ const Navbar = () => {
   const navLinks = [
     { to: "/", label: "Home" },
     { to: "/books", label: "Shop" },
-    { to: "/ebooks", label: "Ebooks" },
-    { to: "/membership", label: "Membership" },
+    // { to: "/ebooks", label: "Ebooks" },
+    // { to: "/membership", label: "Membership" },
   ];
 
   const handleLogout = () => {

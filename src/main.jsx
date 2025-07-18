@@ -13,6 +13,7 @@ import Login from "./pages/authPage/Login.jsx";
 import AuthProvider from "./providers/AuthProvider.jsx";
 import Register from "./pages/authPage/Register.jsx";
 import Cart from "./pages/Cart/cart.jsx";
+import CheckoutPage from "./pages/checkout/Checkout.jsx";
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AuthProvider>
@@ -27,6 +28,7 @@ createRoot(document.getElementById("root")).render(
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/register" element={<Register />} />
           <Route path="/user/cart" element={ <Cart/>} />
+          <Route path="/user/checkout" element={ <CheckoutPage/>} />
         </Route>
       </Routes>
     </AuthProvider>

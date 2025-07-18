@@ -7,7 +7,7 @@ import { baseUrl } from "../../utils/baseUrl";
 const Cart = () => {
     const { user, logOutUser } = useContext(AuthContext);
     const [mycart, setMyCart]= useState([]); 
-
+    console.log({mycart})
     useEffect(() => {
     const fetchCart = async () => {
         const response = await axios.get(`${baseUrl}/cart`);
