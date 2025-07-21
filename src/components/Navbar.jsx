@@ -12,7 +12,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logOutUser } = useContext(AuthContext);
 
-      const [mycart, setMyCart]= useState([]); 
+      const [cart, setMyCart]= useState([]); 
   
       useEffect(() => {
       const fetchCart = async () => {
@@ -96,9 +96,9 @@ const Navbar = () => {
                   >
                     <FaShoppingCart className="h-8 w-8" />
                     {
-                      mycart?.length > 0 && (
+                      cart?.length > 0 && (
                         <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-semibold rounded-full px-2 py-1">
-                          {mycart?.length}
+                          {cart?.length}
                         </span>
                       )
                     }
