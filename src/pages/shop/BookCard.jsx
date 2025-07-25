@@ -31,7 +31,7 @@ const BookCard = ({ book, onDelete}) => {
         </p>
         <div className="flex items-center justify-between">
           <p className="text-amber-500 font-medium">
-          {(book?.price * 121.25).toFixed(2)} TK
+          {(book?.price )} $
           </p>
     
         </div>

@@ -139,7 +139,7 @@ const BookDetails = () => {
           {/* Price and Genre */}
           <div className="space-y-2">
             <p className="text-2xl font-bold text-amber-500">
-              {(currentBook.price * 121.25).toFixed(2)} TK
+              {(currentBook.price).toFixed(2)} $
             </p>
             <p className="text-gray-600">
               Genre: <span className="text-gray-900">{currentBook.genre}</span>

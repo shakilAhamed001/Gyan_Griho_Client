@@ -28,6 +28,8 @@ const Navbar = () => {
   const navLinks = [
     { to: "/", label: "Home" },
     { to: "/books", label: "Shop" },
+    { to: "/about", label: "About" },
+    { to: "/contact", label: "Contact" },
     // { to: "/ebooks", label: "Ebooks" },
     // { to: "/membership", label: "Membership" },
   ];

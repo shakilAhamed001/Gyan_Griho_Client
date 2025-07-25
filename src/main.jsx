@@ -14,6 +14,8 @@ import AuthProvider from "./providers/AuthProvider.jsx";
 import Register from "./pages/authPage/Register.jsx";
 import Cart from "./pages/Cart/cart.jsx";
 import CheckoutPage from "./pages/checkout/Checkout.jsx";
+import About from "./pages/About/About.jsx";
+import Contact from "./pages/About/Contact.jsx";
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AuthProvider>
@@ -21,6 +23,7 @@ createRoot(document.getElementById("root")).render(
       <Routes>
         <Route element={<App />}>
           <Route path="/" element={<Home />} />
+          
           <Route path="/books" element={<Shop />} />
           <Route path="/books/:id" element={<BookDetails />} />
           <Route path="/books/edit/:id" element={<EditBook />} />
@@ -29,6 +32,8 @@ createRoot(document.getElementById("root")).render(
           <Route path="/auth/register" element={<Register />} />
           <Route path="/user/cart" element={ <Cart/>} />
           <Route path="/user/checkout" element={ <CheckoutPage/>} />
+          <Route path="/about" element={ <About /> }></Route>
+          <Route path="/contact" element={ <Contact/> }></Route>
         </Route>
       </Routes>
     </AuthProvider>
