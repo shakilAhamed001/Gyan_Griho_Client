@@ -10,20 +10,10 @@ import { baseUrl } from "../utils/baseUrl";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, logOutUser } = useContext(AuthContext);
+  const { user, logOutUser, cart: myCart } = useContext(AuthContext);
+  console.log({ myCart })
+  const totalItems = myCart.reduce((acc, item) => acc + item.quantity, 0);
 
-      const [cart, setMyCart]= useState([]); 
-  
-      useEffect(() => {
-      const fetchCart = async () => {
-          const response = await axios.get(`${baseUrl}/cart`);
-          const result = response.data.filter(item => item.userEmail == user.email);
-          setMyCart(result);
-      };
-      if (user?.email) { // To ensure user is loaded
-          fetchCart();
-      }
-  }, [user]);
 
   const navLinks = [
     { to: "/", label: "Home" },
@@ -98,9 +88,9 @@ const Navbar = () => {
                   >
                     <FaShoppingCart className="h-8 w-8" />
                     {
-                      cart?.length > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-semibold rounded-full px-2 py-1">
-                          {cart?.length}
+                      myCart?.length > 0 && (
+                        <span className="absolute cursor-pointer -top-2 -right-2 bg-red-500 text-white text-xs font-semibold rounded-full px-2 py-1">
+                          {totalItems}
                         </span>
                       )
                     }

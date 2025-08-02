@@ -9,6 +9,7 @@ import {
 } from "firebase/auth";
 import React, { createContext, useEffect, useState } from "react";
 import { auth } from "../firebase/firebase.config";
+import { toast } from "sonner";
 export const AuthContext = createContext(null);
 
 const AuthProvider = ({ children }) => {
@@ -45,6 +46,42 @@ const AuthProvider = ({ children }) => {
     return signOut(auth);
   };
 
+  const [cart, setCart] = useState(() => {
+    const stored = localStorage.getItem('cart');
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  // Update localStorage when cart changes
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
+
+  const addToCart = (item) => {
+    const index = cart.findIndex(b => b.bookId === item.bookId);
+    let updatedCart = [...cart];
+
+    if (index !== -1) {
+      updatedCart[index].quantity += 1;
+    } else {
+      updatedCart.push(item);
+    }
+
+    setCart(updatedCart);
+  };
+
+   const clearCart = () => {
+    setCart([]);
+    localStorage.removeItem('cart');
+  };
+
+  const removeFromCart = (bookId) => {
+    const updatedCart = cart.filter(item => item.bookId !== bookId);
+    setCart(updatedCart);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    toast.success('Book removed from cart successfully')
+  };
+
+
   const authInfo = {
     user,
     loading,
@@ -55,6 +92,10 @@ const AuthProvider = ({ children }) => {
     logInUser,
     logOutUser,
     signInWithGoogle,
+    cart,
+    addToCart,
+    clearCart,
+    removeFromCart
   };
 
   return (

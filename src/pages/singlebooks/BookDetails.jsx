@@ -6,11 +6,12 @@ import { baseUrl } from "../../utils/baseUrl";
 import { useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../../providers/AuthProvider';
+import { toast } from 'sonner';
 
 const BookDetails = () => {
   const { id } = useParams();
   const { currentBook, loading, error, fetchBookDetails, clearCurrentBook } = useBooks();
-   const { user, logOutUser } = useContext(AuthContext);
+   const { user, logOutUser, addToCart } = useContext(AuthContext);
   window.scrollTo(0, 0);
 
   useEffect(() => {
@@ -25,70 +26,28 @@ const BookDetails = () => {
       </div>
     );
   }
-// const handleAddToCart = () => {
-//   //  let cart = localStorage.getItem("cart");
-//   // cart = cart ? JSON.parse(cart) : [];
-//   // console.log({cart});
-//   // // Check if item already exists
-//   // if(cart.length === 0) {
-//   //   // If cart is empty, add the item with quantity 1
-//   //   cart.push({ ...currentBook, quantity: 1 });
-//   //   localStorage.setItem("cart", JSON.stringify(cart));
-//   //   return;
-//   // }
-//   // const existingIndex = cart.findIndex(i => i._id === currentBook._id);
-//   // console.log({existingIndex});
-//   // if (existingIndex >= 0) {
-//   //   // If already in cart, increase quantity
-//   //   cart[existingIndex].quantity += 1;
-//   // } else if(existingIndex === -1) {
-//   //   // Otherwise add new item with quantity 1
-//   //   return ;
-//   // }else{
-//   //   cart.push({ ...item, quantity: 1 });
-//   // }
 
-//   // // Save back to localStorage
-//   // localStorage.setItem("cart", JSON.stringify(cart));
-//     let cart = localStorage.getItem("cart");
-//   cart = cart ? JSON.parse(cart) : [];
 
-//   // Check if item already exists
-//   const existingIndex = cart.findIndex(i => i._id === currentBook._id);
+const handleAddToCart = () => {
+  const data = {
+    bookId: currentBook._id,
+    title: currentBook.title,
+    author: currentBook.author,
+    price: currentBook.price,
+    imageUrl: currentBook.imageUrl || '/placeholder-book.jpg',
+    quantity: 1,
+    genre: currentBook.genre,
+    publishedYear: currentBook.publishedYear || 'N/A',
+    description: currentBook.description || 'No description available.',
+    userEmail: user.email,
+  };
+  addToCart(data);
 
-//   if (existingIndex >= 0) {
-//     // If already in cart, increase quantity
-//     cart[existingIndex].quantity += 1;
-//   } else {
-//     // Otherwise add new item with quantity 1
-//     cart.push({ ...currentBook, quantity: 1 });
-//   }
 
-//   // Save back to localStorage
-//   localStorage.setItem("cart", JSON.stringify(cart));
-// }
-  const handleAddToCart = () => {
-    const data = {
-      bookId: currentBook._id,
-      title: currentBook.title,
-      author: currentBook.author,
-      price: currentBook.price,
-      imageUrl: currentBook.imageUrl || '/placeholder-book.jpg',
-      quantity: 1,
-      genre: currentBook.genre,
-      publishedYear: currentBook.publishedYear || 'N/A',
-      description: currentBook.description || 'No description available.',
-      userEmail: user.email,
-    }
-    axios.post(`${baseUrl}/cart`, data)
-         .then(() => {
-           alert('Book added successfully');
-          //  reset();
-         })
-         .catch((err) => {
-           alert(`Error adding book: ${err.message}`);
-         });
-  }
+  toast.success('Book added to cart successfully');
+  // alert('Book added successfully');
+};
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -163,7 +122,7 @@ const BookDetails = () => {
           <div className="flex space-x-4 pt-6">
             {
               user ? (
-                 <button onClick={handleAddToCart} className=" bg-amber-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-amber-600 transition-colors flex items-center justify-center">
+                 <button onClick={handleAddToCart} className=" bg-amber-500 cursor-pointer text-white px-6 py-3 rounded-lg font-semibold hover:bg-amber-600 transition-colors flex items-center justify-center">
               <FaShoppingCart className="mr-2" />
               Add to Cart
             </button>

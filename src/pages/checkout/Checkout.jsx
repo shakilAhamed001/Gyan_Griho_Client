@@ -4,19 +4,22 @@ import axios from "axios";
 import { baseUrl } from "../../utils/baseUrl";
 
 const CheckoutPage = () => {
-  const { user, logOutUser } = useContext(AuthContext);
-    const [mycart, setMyCart]= useState([]); 
-    console.log({mycart})
-    useEffect(() => {
+  const { user, logOutUser, cart } = useContext(AuthContext);
+  const [mycart, setMyCart] = useState([]);
+console.log({cart})
+  const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+
+  // console.log({ mycart })
+  useEffect(() => {
     const fetchCart = async () => {
-        const response = await axios.get(`${baseUrl}/cart`);
-        const result = response.data.filter(item => item.userEmail == user.email);
-        setMyCart(result);
+      const response = await axios.get(`${baseUrl}/cart`);
+      const result = response.data.filter(item => item.userEmail == user.email);
+      setMyCart(result);
     };
     if (user?.email) { // To ensure user is loaded
-        fetchCart();
+      fetchCart();
     }
-}, [user]);
+  }, [user]);
 
   const totalPrice = mycart.reduce(
     (acc, book) => acc + book.price * book.quantity,
@@ -24,7 +27,7 @@ const CheckoutPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen  bg-gray-100 p-6">
       <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left: User Details Form */}
         <div>
@@ -97,9 +100,9 @@ const CheckoutPage = () => {
         {/* Right: Cart Summary */}
         <div>
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Your Cart</h2>
-          {mycart.map((book) => (
+          {cart.map((book) => (
             <div
-              key={book._id}
+              key={book.bookId}
               className="flex gap-4 border-b border-gray-200 pb-4 mb-4"
             >
               <img

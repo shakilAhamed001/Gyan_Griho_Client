@@ -4,10 +4,12 @@ import axios from "axios";
 import { baseUrl } from "../../utils/baseUrl";
 
 const Cart = () => {
-  const { user } = useContext(AuthContext);
+  const { user, cart, removeFromCart } = useContext(AuthContext);
+  console.log({cart})
   const [mycart, setMyCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const totalItems = cart.reduce((acc, item) => acc + (item.quantity * item.price), 0);
 
   // Fetch cart items for the current user
   useEffect(() => {
@@ -17,6 +19,7 @@ const Cart = () => {
         const result = response.data.filter(
           (item) => item.userEmail === user.email
         );
+        console.log({result})
         setMyCart(result);
       } catch (err) {
         setError("Failed to fetch cart.");
@@ -135,16 +138,16 @@ const Cart = () => {
         {/* Right: Scrollable Cart Summary */}
         <div className="overflow-y-auto max-h-[calc(100vh-6rem)]">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Your Cart</h2>
-          {mycart.length === 0 ? (
+          {cart.length === 0 ? (
             <p className="text-gray-600">Your cart is empty.</p>
           ) : (
-            mycart.map((book) => (
+            cart?.map((book) => (
               <div
-                key={book._id}
+                key={book?.bookId}
                 className="flex gap-5 border-b border-gray-200 pb-5 mb-5 last:border-none last:mb-0"
               >
                 <img
-                  src={book.imageUrl}
+                  src={book?.imageUrl}
                   alt={book.title}
                   className="w-24 h-32 object-cover rounded-lg"
                 />
@@ -162,8 +165,8 @@ const Cart = () => {
                     ${(Number(book.price) * Number(book.quantity)).toFixed(2)}
                   </p>
                   <button
-                    onClick={() => handleRemoveItem(book._id)}
-                    className="mt-2 text-red-600 text-sm hover:underline"
+                    onClick={() => removeFromCart(book.bookId)}
+                    className="mt-2 text-red-600 text-sm cursor-pointer hover:underline"
                   >
                     Remove
                   </button>
@@ -173,17 +176,18 @@ const Cart = () => {
           )}
 
           {/* Total Price */}
-          {mycart.length > 0 && (
+          {cart.length > 0 && (
             <div className="flex justify-between items-center text-lg font-semibold mt-6 border-t border-gray-300 pt-4">
               <span>Total:</span>
-              <span className="text-green-700">${totalPrice.toFixed(2)}</span>
+              <span className="text-green-700">${totalItems.toFixed(2)}</span>
             </div>
           )}
 
           <button
-            disabled={mycart.length === 0}
-            className={`mt-6 w-full py-3 rounded-md font-semibold text-white transition ${
-              mycart.length === 0
+            disabled={cart.length === 0}
+            // onClick={clearCart}
+            className={`mt-6 w-full py-3 cursor-pointer rounded-md font-semibold text-white transition ${
+              cart.length === 0
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-green-600 hover:bg-green-700"
             }`}
