@@ -1,19 +1,17 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Link, NavLink } from "react-router-dom"; // Updated import
+import React, { useContext, useState } from "react";
+import { Link, NavLink } from "react-router-dom";
 import { FaShoppingCart, FaUser } from "react-icons/fa";
 import { HiMenu, HiX } from "react-icons/hi";
 import { AuthContext } from "../providers/AuthProvider";
 import { Tooltip } from "react-tooltip";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Ensure toast styles are imported
+import { toast } from "sonner";
+import "react-toastify/dist/ReactToastify.css";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, logOutUser, cart: myCart, role } = useContext(AuthContext);
-  console.log({ myCart });
-  const totalItems = myCart.reduce((acc, item) => acc + item.quantity, 0);
+  const { user, logOutUser, cart, role } = useContext(AuthContext);
+  const totalItems = cart.reduce((acc, item) => acc + (item.quantity || 1), 0);
 
-  // Conditionally include Dashboard link if user is logged in and has admin role
   const navLinks = [
     { to: "/", label: "Home" },
     { to: "/books", label: "Shop" },
@@ -28,26 +26,18 @@ const Navbar = () => {
         console.log("user logged out successfully");
         toast.error("Logged Out Successfully", {
           position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "dark",
-          transition: "bounce",
+          duration: 5000,
+          closeButton: true,
+          action: { label: "Close", onClick: () => {} },
         });
       })
       .catch((error) => {
         console.error("Logout error:", error);
         toast.error(`Logout failed: ${error.message}`, {
           position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "dark",
-          transition: "bounce",
+          duration: 5000,
+          closeButton: true,
+          action: { label: "Close", onClick: () => {} },
         });
       });
   };
@@ -56,7 +46,6 @@ const Navbar = () => {
     <nav className="bg-white fixed w-full top-0 z-50 py-4">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
           <NavLink
             to="/"
             className="text-xl font-bold uppercase tracking-wider text-gray-800"
@@ -64,7 +53,6 @@ const Navbar = () => {
             Gyan<span className="text-amber-500">Griho.</span>
           </NavLink>
 
-          {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map(({ to, label }) => (
               <NavLink
@@ -81,18 +69,16 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Right Side Icons */}
           <div className="flex items-center space-x-4">
             <div className="navbar-end gap-4">
               {user ? (
                 <div className="flex gap-2 items-center">
-                  {/* Cart Icon */}
                   <NavLink
                     to="/user/cart"
                     className="bg-black relative text-white p-2 rounded-full hover:bg-gray-800 transition-colors"
                   >
                     <FaShoppingCart className="h-8 w-8" />
-                    {myCart?.length > 0 && (
+                    {totalItems > 0 && (
                       <span className="absolute cursor-pointer -top-2 -right-2 bg-red-500 text-white text-xs font-semibold rounded-full px-2 py-1">
                         {totalItems}
                       </span>
@@ -137,7 +123,6 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* Mobile Menu Button */}
             <button
               className="md:hidden text-gray-700 hover:text-amber-500 transition-colors"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -151,7 +136,6 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden pt-4 pb-2">
             <div className="flex flex-col space-y-3">

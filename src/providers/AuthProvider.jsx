@@ -11,31 +11,35 @@ import {
 import React, { createContext, useEffect, useState } from "react";
 import { auth } from "../firebase/firebase.config";
 import { toast } from "sonner";
+import axios from "axios";
+import { baseUrl } from "../utils/baseUrl";
+
 export const AuthContext = createContext(null);
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [role, setRole] = useState(null); // Added for role management
+  const [role, setRole] = useState(null);
+  const [cart, setCart] = useState([]);
+  const [cartRefresh, setCartRefresh] = useState(false); // Added for cart sync
   const provider = new GoogleAuthProvider();
 
-  // Optional: Uncomment if using Firebase Auth emulator for local development
+  // Optional: Uncomment if using Firebase Auth emulator
   // useEffect(() => {
   //   connectAuthEmulator(auth, "http://localhost:9099");
   // }, []);
 
   const createUser = async (email, password) => {
     const result = await createUserWithEmailAndPassword(auth, email, password);
-    // Set default role to 'user' in Firebase custom claims
-    await fetch('/api/set-role', {
-      method: 'POST',
+    await fetch(`${baseUrl}/api/set-role`, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${await result.user.getIdToken()}`,
       },
-      body: JSON.stringify({ uid: result.user.uid, role: 'user' }),
+      body: JSON.stringify({ uid: result.user.uid, role: "user" }),
     });
-    setRole('user');
+    setRole("user");
     return result;
   };
 
@@ -45,26 +49,24 @@ const AuthProvider = ({ children }) => {
 
   const logInUser = async (email, password) => {
     const result = await signInWithEmailAndPassword(auth, email, password);
-    // Fetch user role from custom claims
     const token = await result.user.getIdTokenResult();
-    setRole(token.claims.role || 'user');
+    setRole(token.claims.role || "user");
     return result;
   };
 
   const signInWithGoogle = async () => {
     const result = await signInWithPopup(auth, provider);
-    // Set default role to 'user' if not already set
     const token = await result.user.getIdTokenResult();
     if (!token.claims.role) {
-      await fetch('/api/set-role', {
-        method: 'POST',
+      await fetch(`${baseUrl}/api/set-role`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${await result.user.getIdToken()}`,
         },
-        body: JSON.stringify({ uid: result.user.uid, role: 'user' }),
+        body: JSON.stringify({ uid: result.user.uid, role: "user" }),
       });
-      setRole('user');
+      setRole("user");
     } else {
       setRole(token.claims.role);
     }
@@ -85,59 +87,103 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  const fetchCart = async (idToken) => {
+    try {
+      const response = await axios.get(`${baseUrl}/cart`, {
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+      const cartData = Array.isArray(response.data) ? response.data : [];
+      setCart(cartData);
+      console.log("Fetched cart in AuthProvider:", cartData);
+    } catch (error) {
+      console.error("Error fetching cart in AuthProvider:", error);
+      setCart([]);
+      toast.error("Failed to fetch cart data.");
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
         const token = await currentUser.getIdTokenResult();
-        setRole(token.claims.role || 'user');
+        setRole(token.claims.role || "user");
+        await fetchCart(await currentUser.getIdToken());
       } else {
         setRole(null);
+        setCart([]);
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [cartRefresh]);
 
   const logOutUser = () => {
-    clearCart();
+    setCart([]);
     setRole(null);
     return signOut(auth);
   };
 
-  const [cart, setCart] = useState(() => {
-    const stored = localStorage.getItem('cart');
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }, [cart]);
-
-  const addToCart = (item) => {
-    const index = cart.findIndex(b => b.bookId === item.bookId);
-    let updatedCart = [...cart];
-
-    if (index !== -1) {
-      updatedCart[index].quantity = (updatedCart[index].quantity || 1) + 1;
-    } else {
-      updatedCart.push({ ...item, quantity: 1 });
+  const addToCart = async (item) => {
+    if (!user) {
+      toast.error("Please log in to add items to cart.");
+      return;
     }
-
-    setCart(updatedCart);
+    try {
+      const idToken = await user.getIdToken();
+      const response = await axios.post(
+        `${baseUrl}/cart`,
+        { bookId: item.bookId, quantity: 1 },
+        { headers: { Authorization: `Bearer ${idToken}` } }
+      );
+      setCartRefresh((prev) => !prev); // Trigger cart refresh
+      toast.success("Book added to cart successfully");
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast.error(error.response?.data?.error || "Failed to add to cart.");
+    }
   };
 
-  const clearCart = () => {
-    setCart([]);
-    localStorage.removeItem('cart');
+  const removeFromCart = async (cartId) => {
+    if (!user) {
+      toast.error("Please log in to remove items from cart.");
+      return;
+    }
+    try {
+      const idToken = await user.getIdToken();
+      await axios.delete(`${baseUrl}/cart/${cartId}`, {
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+      setCartRefresh((prev) => !prev); // Trigger cart refresh
+      toast.success("Book removed from cart successfully");
+    } catch (error) {
+      console.error("Error removing from cart:", error);
+      toast.error(error.response?.data?.error || "Failed to remove from cart.");
+    }
   };
 
-  const removeFromCart = (bookId) => {
-    const updatedCart = cart.filter(item => item.bookId !== bookId);
-    setCart(updatedCart);
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-    toast.success('Book removed from cart successfully');
+  const clearCart = async () => {
+    if (!user) {
+      toast.error("Please log in to clear cart.");
+      return;
+    }
+    try {
+      const idToken = await user.getIdToken();
+      await Promise.all(
+        cart.map((item) =>
+          axios.delete(`${baseUrl}/cart/${item._id}`, {
+            headers: { Authorization: `Bearer ${idToken}` },
+          })
+        )
+      );
+      setCart([]);
+      setCartRefresh((prev) => !prev);
+      toast.success("Cart payment successfully");
+    } catch (error) {
+      console.error("Error clearing cart:", error);
+      toast.error("Failed to clear cart.");
+    }
   };
 
   const authInfo = {
@@ -155,13 +201,13 @@ const AuthProvider = ({ children }) => {
     addToCart,
     clearCart,
     removeFromCart,
-    role, // Added role to context
+    role,
     setRole,
+    cartRefresh,
+    setCartRefresh,
   };
 
-  return (
-    <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>;
 };
 
 export default AuthProvider;
